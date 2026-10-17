@@ -16,7 +16,8 @@
     { capture: true },
   );
 
-  // How far people get: each game band counts once per visit, when 40% of it is on screen.
+  // How far people get: each game band counts once per visit, when it reaches the middle of the screen.
+  // (A share-of-band threshold never triggers when a band is several screens tall, e.g. phones in landscape.)
   if (!("IntersectionObserver" in window)) return;
   const observer = new IntersectionObserver(
     (entries) => {
@@ -26,7 +27,7 @@
         observer.unobserve(entry.target);
       }
     },
-    { threshold: 0.4 },
+    { rootMargin: "-45% 0px -45% 0px" },
   );
   document.querySelectorAll("section.game[id]").forEach((section) => observer.observe(section));
 })();

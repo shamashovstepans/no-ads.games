@@ -45,7 +45,7 @@ no-ads.games, so local previews never count. `assets/analytics.js` adds these ev
 | --- | --- | --- |
 | `app-store-click` | `game` | An App Store badge is tapped |
 | `game-jump` | `game` | A game is picked in the hero list |
-| `game-viewed` | `game` | 40% of a game band is on screen (once per visit) |
+| `game-viewed` | `game` | A game band reaches the middle of the screen (once per visit) |
 | `footer-link` | `game`, `link` (`support` or `privacy`) | A support or privacy link is opened |
 
 To tag an element, give it `data-event="name"`; its other `data-*` attributes become the event data.
