@@ -29,6 +29,8 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bagel+Fat+One&display=block">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700&display=swap">
   <link rel="stylesheet" href="styles.css">
+  <script defer src="https://cloud.umami.is/script.js" data-website-id="434da60d-2257-483d-8dd3-50d081fe6aae" data-domains="no-ads.games"></script>
+  <script defer src="assets/analytics.js"></script>
 </head>
 <body>
   <header class="hero">
@@ -49,19 +51,19 @@
 
       <ul class="hero__games" aria-label="Games">
         <li>
-          <a href="#drift-survivors">
+          <a href="#drift-survivors" data-event="game-jump" data-game="drift-survivors">
             <img src="assets/icons/drift-survivors.webp" width="48" height="48" alt="">
             <span><strong>Drift Survivors</strong><small>One-finger drifting</small></span>
           </a>
         </li>
         <li>
-          <a href="#pocket-cosmo">
+          <a href="#pocket-cosmo" data-event="game-jump" data-game="pocket-cosmo">
             <img src="assets/icons/pocket-cosmo.webp" width="48" height="48" alt="">
             <span><strong>Pocket Cosmo</strong><small>Grow a universe</small></span>
           </a>
         </li>
         <li>
-          <a href="#pocket-metropolis">
+          <a href="#pocket-metropolis" data-event="game-jump" data-game="pocket-metropolis">
             <img src="assets/icons/pocket-metropolis.webp" width="48" height="48" alt="">
             <span><strong>Pocket Metropolis</strong><small>Coming soon</small></span>
           </a>
@@ -81,7 +83,7 @@
           <p class="game__tagline">One finger. Total control. Pure drift.</p>
           <p class="game__text">Steer and work the throttle with a single finger. Thread between buildings, bait homing police cars into your skid trail and stack nitro into combos worth billions. One slip ends the run.</p>
           <div class="game__cta">
-            <a class="store-badge" href="https://apps.apple.com/app/id6773509783">
+            <a class="store-badge" href="https://apps.apple.com/app/apple-store/id6773509783?pt=127670757&amp;ct=no-ads.games&amp;mt=8" data-event="app-store-click" data-game="drift-survivors">
               <img src="https://toolbox.marketingtools.apple.com/api/v2/badges/download-on-the-app-store/black/en-us" width="120" height="40" alt="Download Drift Survivors on the App Store">
             </a>
             <p class="game__note">Free on iPhone.</p>
@@ -103,7 +105,7 @@
           <p class="game__tagline">A little dust. A little time. A universe of your own.</p>
           <p class="game__text">Hold the screen to gather stardust and grow it into a Sun-like star, a supernova, a black hole and finally a galaxy. Every finished object joins your universe map, along with the real science behind it.</p>
           <div class="game__cta">
-            <a class="store-badge" href="https://apps.apple.com/app/id6810904381">
+            <a class="store-badge" href="https://apps.apple.com/app/apple-store/id6810904381?pt=127670757&amp;ct=no-ads.games&amp;mt=8" data-event="app-store-click" data-game="pocket-cosmo">
               <img src="https://toolbox.marketingtools.apple.com/api/v2/badges/download-on-the-app-store/black/en-us" width="120" height="40" alt="Download Pocket Cosmo on the App Store" loading="lazy">
             </a>
             <p class="game__note">Free on iPhone. Available in select countries for now.</p>
@@ -146,15 +148,15 @@
       <nav aria-labelledby="footer-drift">
         <h2 id="footer-drift">Drift Survivors</h2>
         <ul>
-          <li><a href="https://drift-game-production.up.railway.app/support.html">Support</a></li>
-          <li><a href="https://drift-game-production.up.railway.app/privacy.html">Privacy policy</a></li>
+          <li><a href="https://drift-game-production.up.railway.app/support.html" data-event="footer-link" data-game="drift-survivors" data-link="support">Support</a></li>
+          <li><a href="https://drift-game-production.up.railway.app/privacy.html" data-event="footer-link" data-game="drift-survivors" data-link="privacy">Privacy policy</a></li>
         </ul>
       </nav>
       <nav aria-labelledby="footer-cosmo">
         <h2 id="footer-cosmo">Pocket Cosmo</h2>
         <ul>
-          <li><a href="https://observatory-production-b0d2.up.railway.app/support">Support</a></li>
-          <li><a href="https://observatory-production-b0d2.up.railway.app/privacy">Privacy policy</a></li>
+          <li><a href="https://observatory-production-b0d2.up.railway.app/support" data-event="footer-link" data-game="pocket-cosmo" data-link="support">Support</a></li>
+          <li><a href="https://observatory-production-b0d2.up.railway.app/privacy" data-event="footer-link" data-game="pocket-cosmo" data-link="privacy">Privacy policy</a></li>
         </ul>
       </nav>
     </div>

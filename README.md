@@ -35,6 +35,28 @@ Then open http://localhost:4173.
 - App Store badges load from Apple's badge service (`toolbox.marketingtools.apple.com`).
 - Support and privacy links point at each game's backend until those pages move to this domain.
 
+## Analytics
+
+[Umami Cloud](https://cloud.umami.is), no cookies, so no consent banner. The tracker in `index.html` and `404.html`
+(`data-website-id`) records page views, referrers, UTM tags, countries and devices. `data-domains` keeps it to
+no-ads.games, so local previews never count. `assets/analytics.js` adds these events:
+
+| Event | Data | When |
+| --- | --- | --- |
+| `app-store-click` | `game` | An App Store badge is tapped |
+| `game-jump` | `game` | A game is picked in the hero list |
+| `game-viewed` | `game` | 40% of a game band is on screen (once per visit) |
+| `footer-link` | `game`, `link` (`support` or `privacy`) | A support or privacy link is opened |
+
+To tag an element, give it `data-event="name"`; its other `data-*` attributes become the event data.
+
+- **Your own visits:** on no-ads.games, run `localStorage.setItem("umami.disabled", 1)` in the browser console once
+  per browser.
+- **Where visitors come from:** share links with UTM tags, for example
+  `https://no-ads.games/?utm_source=tiktok&utm_medium=social&utm_campaign=drift-launch`. Umami lists them under UTM.
+- **Installs from the site:** the badges carry `pt=<provider token>&ct=no-ads.games`, so App Store Connect →
+  Analytics → Campaigns shows product page views and downloads for the `no-ads.games` campaign.
+
 ## Deploy (GitHub Pages)
 
 1. Push this folder to a public GitHub repository.
