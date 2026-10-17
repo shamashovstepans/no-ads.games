@@ -50,8 +50,9 @@ no-ads.games, so local previews never count. `assets/analytics.js` adds these ev
 
 To tag an element, give it `data-event="name"`; its other `data-*` attributes become the event data.
 
-- **Your own visits:** on no-ads.games, run `localStorage.setItem("umami.disabled", 1)` in the browser console once
-  per browser.
+- **Your own visits:** open https://no-ads.games/?notrack once in each browser you use (phone too) and that browser
+  stops counting; https://no-ads.games/?track undoes it. Safari can drop the setting after about a week without a
+  visit, so open the `?notrack` link again if your own visits reappear.
 - **Where visitors come from:** share links with UTM tags, for example
   `https://no-ads.games/?utm_source=tiktok&utm_medium=social&utm_campaign=drift-launch`. Umami lists them under UTM.
 - **Installs from the site:** the badges carry `pt=<provider token>&ct=no-ads.games`, so App Store Connect →

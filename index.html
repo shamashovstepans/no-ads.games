@@ -29,6 +29,28 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bagel+Fat+One&display=block">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700&display=swap">
   <link rel="stylesheet" href="styles.css">
+  <script>
+    // Leave your own visits out of analytics: open no-ads.games/?notrack once in each browser (?track undoes it).
+    // Runs before the Umami tracker, which checks this flag before sending anything.
+    (() => {
+      const query = new URLSearchParams(location.search);
+      const off = query.has("notrack");
+      if (!off && !query.has("track")) return;
+      try {
+        if (off) localStorage.setItem("umami.disabled", "1");
+        else localStorage.removeItem("umami.disabled");
+      } catch {}
+      history.replaceState(null, "", location.pathname + location.hash);
+      addEventListener("DOMContentLoaded", () => {
+        const note = document.createElement("p");
+        note.className = "track-note";
+        note.setAttribute("role", "status");
+        note.textContent = off ? "Visits from this browser are no longer counted." : "Visits from this browser are counted again.";
+        document.body.append(note);
+        setTimeout(() => note.remove(), 5000);
+      });
+    })();
+  </script>
   <script defer src="https://cloud.umami.is/script.js" data-website-id="434da60d-2257-483d-8dd3-50d081fe6aae" data-domains="no-ads.games"></script>
   <script defer src="assets/analytics.js"></script>
 </head>
