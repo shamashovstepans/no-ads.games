@@ -1,0 +1,490 @@
+/* no-ads.games */
+
+:root {
+  --surface: #ebeef1;
+  --on-surface: #1a2130;
+  --on-surface-soft: #4f596a;
+  --signal: #e0362b;
+  --sticker-ink: #1a2130;
+
+  --drift-bg: #170f24;
+  --drift-ink: #f7f2fc;
+  --drift-soft: #c4b9d6;
+  --drift-grid: rgb(150 100 255 / 0.09);
+
+  --cosmo-bg: #0b0a26;
+  --cosmo-ink: #efeaff;
+  --cosmo-soft: #b9b0dc;
+
+  --metro-bg: #cfe5ec;
+  --metro-ink: #15303a;
+  --metro-soft: #3b5761;
+
+  --display: "Bagel Fat One", "Arial Rounded MT Bold", "Trebuchet MS", sans-serif;
+  --text: "Onest", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+
+  --gutter: clamp(1rem, 4vw, 2.5rem);
+  --measure: 34em;
+  color-scheme: light dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --surface: #171b23;
+    --on-surface: #eef1f5;
+    --on-surface-soft: #a9b2c0;
+  }
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--surface);
+  color: var(--on-surface);
+  font: 400 1.125rem/1.6 var(--text);
+  -webkit-font-smoothing: antialiased;
+}
+
+img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+a {
+  color: inherit;
+}
+
+:focus-visible {
+  outline: 3px solid currentColor;
+  outline-offset: 4px;
+  border-radius: 4px;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.wrap {
+  max-width: 72rem;
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+}
+
+/* The sticker: a "no ads, please" mailbox sticker, die-cut with a printed red rim */
+
+.sticker {
+  /* sized to stay on one line: the whole sticker is about 8.5em wide */
+  --size: clamp(2rem, (100vw - 2 * var(--gutter)) / 8.8, 6.25rem);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2em;
+  max-width: 100%;
+  margin: 0;
+  padding: 0.3em 0.5em 0.36em 0.32em;
+  font: 400 var(--size) / 0.92 var(--display);
+  letter-spacing: -0.01em;
+  color: var(--sticker-ink);
+  background: linear-gradient(165deg, #fff 0%, #fcfcfd 55%, #eceff2 100%);
+  border-radius: 0.3em;
+  box-shadow:
+    inset 0 0 0 0.075em #fff,
+    inset 0 0 0 0.13em var(--signal),
+    0 0.015em 0 rgb(26 33 48 / 0.12),
+    0 0.12em 0.22em -0.06em rgb(26 33 48 / 0.28),
+    0 0.45em 0.9em -0.35em rgb(26 33 48 / 0.42);
+  transform: rotate(-3deg);
+  transform-origin: 30% 60%;
+}
+
+.sticker__sign {
+  flex: none;
+  width: 0.95em;
+  height: 0.95em;
+}
+
+.sticker__sign .badge {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.6;
+}
+
+.sticker__sign text {
+  font: 700 12px var(--text);
+  fill: currentColor;
+}
+
+.sticker__sign .no {
+  fill: none;
+  stroke: var(--signal);
+  stroke-width: 5;
+}
+
+.sticker__words {
+  display: flex;
+  flex-wrap: wrap;
+  min-width: 0;
+}
+
+.sticker__words > span {
+  white-space: nowrap;
+}
+
+/* Hero */
+
+.hero {
+  padding-block: clamp(3.5rem, 2rem + 6vw, 7rem) clamp(3rem, 2rem + 4vw, 5.5rem);
+}
+
+.hero__lead {
+  max-width: 22em;
+  margin: clamp(2rem, 1.5rem + 2vw, 3rem) 0 0;
+  font: 600 clamp(1.625rem, 1.2rem + 1.6vw, 2.5rem) / 1.15 var(--text);
+  letter-spacing: -0.015em;
+  text-wrap: balance;
+}
+
+.hero__text {
+  max-width: var(--measure);
+  margin: 1rem 0 0;
+  font-size: clamp(1.125rem, 1.05rem + 0.3vw, 1.3125rem);
+  color: var(--on-surface-soft);
+}
+
+.hero__games {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem 2rem;
+  margin: 2.5rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.hero__games a {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  line-height: 1.3;
+  text-decoration: none;
+}
+
+.hero__games img {
+  width: 3rem;
+  height: 3rem;
+  border-radius: 22.5%;
+  box-shadow:
+    0 0 0 1px rgb(26 33 48 / 0.08),
+    0 6px 12px -6px rgb(26 33 48 / 0.45);
+}
+
+.hero__games strong {
+  display: block;
+  font-weight: 600;
+}
+
+.hero__games small {
+  display: block;
+  font-size: 0.875rem;
+  color: var(--on-surface-soft);
+}
+
+.hero__games a:hover strong {
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 0.2em;
+}
+
+.hero__fine {
+  max-width: 40em;
+  margin: 2.25rem 0 0;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: var(--on-surface-soft);
+}
+
+/* Games: each band takes its colours from the game's own art */
+
+.game {
+  padding-block: clamp(4rem, 2.5rem + 6vw, 8rem);
+  color: var(--ink);
+  background-color: var(--bg);
+}
+
+.game--drift {
+  --bg: var(--drift-bg);
+  --ink: var(--drift-ink);
+  --soft: var(--drift-soft);
+  /* the neon floor grid the cars drift across */
+  background-image:
+    linear-gradient(var(--drift-grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--drift-grid) 1px, transparent 1px);
+  background-size: 56px 56px;
+  background-position: center top;
+}
+
+.game--cosmo {
+  --bg: var(--cosmo-bg);
+  --ink: var(--cosmo-ink);
+  --soft: var(--cosmo-soft);
+  /* a sparse starfield, two tile sizes so the repeat is hard to spot */
+  background-image:
+    radial-gradient(1.2px 1.2px at 22px 34px, rgb(255 255 255 / 0.75), transparent),
+    radial-gradient(1px 1px at 141px 88px, rgb(255 255 255 / 0.5), transparent),
+    radial-gradient(1.6px 1.6px at 236px 191px, rgb(233 194 123 / 0.8), transparent),
+    radial-gradient(1px 1px at 77px 232px, rgb(190 170 255 / 0.65), transparent),
+    radial-gradient(1px 1px at 198px 26px, rgb(255 255 255 / 0.45), transparent),
+    radial-gradient(1.3px 1.3px at 312px 140px, rgb(255 255 255 / 0.6), transparent),
+    radial-gradient(1px 1px at 58px 377px, rgb(255 255 255 / 0.4), transparent),
+    radial-gradient(1.4px 1.4px at 381px 309px, rgb(190 170 255 / 0.7), transparent);
+  background-size:
+    280px 280px, 280px 280px, 280px 280px, 280px 280px, 280px 280px,
+    430px 430px, 430px 430px, 430px 430px;
+}
+
+.game--metro {
+  --bg: var(--metro-bg);
+  --ink: var(--metro-ink);
+  --soft: var(--metro-soft);
+}
+
+.game__grid {
+  display: grid;
+  gap: clamp(2.5rem, 1.5rem + 3vw, 4rem);
+  align-items: center;
+}
+
+@media (min-width: 62rem) {
+  .game__grid {
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+  }
+}
+
+.game__icon {
+  width: 6rem;
+  height: 6rem;
+  border-radius: 22.5%;
+  box-shadow:
+    0 0 0 1px rgb(255 255 255 / 0.1),
+    0 14px 28px -14px rgb(0 0 0 / 0.7);
+}
+
+.game--metro .game__icon {
+  box-shadow:
+    0 0 0 1px rgb(21 48 58 / 0.08),
+    0 14px 28px -16px rgb(21 48 58 / 0.55);
+}
+
+.game__title {
+  margin: 1.5rem 0 0;
+  font: 400 clamp(2.5rem, 1.4rem + 4vw, 4.5rem) / 0.98 var(--display);
+  letter-spacing: -0.01em;
+  text-wrap: balance;
+}
+
+.game__tagline {
+  margin: 1rem 0 0;
+  font: 600 clamp(1.25rem, 1.1rem + 0.5vw, 1.5rem) / 1.3 var(--text);
+  text-wrap: balance;
+}
+
+.game__text {
+  max-width: var(--measure);
+  margin: 1rem 0 0;
+  color: var(--soft);
+}
+
+.game__cta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem 1.25rem;
+  margin-top: 2rem;
+}
+
+.game__note {
+  max-width: 18em;
+  margin: 0;
+  font-size: 0.9375rem;
+  line-height: 1.45;
+  color: var(--soft);
+}
+
+.store-badge {
+  display: block;
+  flex: none;
+  border-radius: 10px;
+}
+
+.store-badge img {
+  width: 10rem;
+}
+
+/* An empty, dashed slot: the placeholder an ad would have filled */
+.soon {
+  display: inline-flex;
+  align-items: center;
+  min-height: 3.25rem;
+  margin: 0;
+  padding: 0.5rem 1.25rem;
+  font-weight: 600;
+  border: 2px dashed currentColor;
+  border-radius: 0.75rem;
+}
+
+/* Screenshots */
+
+.shots {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: clamp(0.75rem, 0.5rem + 1vw, 1.25rem);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.shots img {
+  width: 100%;
+  border-radius: clamp(0.9rem, 0.6rem + 0.8vw, 1.4rem);
+  box-shadow: 0 0 0 1px rgb(255 255 255 / 0.08);
+}
+
+.game--metro .shots img {
+  box-shadow: 0 16px 32px -18px rgb(21 48 58 / 0.6);
+}
+
+.shots figure {
+  margin: 0;
+}
+
+.shots figcaption {
+  margin-top: 0.75rem;
+  font-size: 0.9375rem;
+  font-weight: 600;
+}
+
+@media (max-width: 47.99rem) {
+  .shots {
+    grid-template-columns: none;
+    grid-auto-flow: column;
+    grid-auto-columns: min(54vw, 15rem);
+    margin-inline: calc(var(--gutter) * -1);
+    padding-inline: var(--gutter);
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x mandatory;
+    scroll-padding-inline: var(--gutter);
+    scrollbar-width: none;
+  }
+
+  .shots::-webkit-scrollbar {
+    display: none;
+  }
+
+  .shots > li {
+    scroll-snap-align: start;
+  }
+}
+
+/* Footer */
+
+.footer {
+  padding-block: 3.5rem 3rem;
+  font-size: 0.9375rem;
+}
+
+.footer__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+  gap: 2rem;
+  align-items: start;
+}
+
+.footer__mark {
+  margin: 0;
+  font: 400 1.5rem / 1 var(--display);
+}
+
+.footer__copy {
+  margin: 0.75rem 0 0;
+  color: var(--on-surface-soft);
+}
+
+.footer h2 {
+  margin: 0 0 0.5rem;
+  font-size: inherit;
+  font-weight: 700;
+}
+
+.footer ul {
+  display: grid;
+  gap: 0.35rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.footer a {
+  color: var(--on-surface-soft);
+  text-underline-offset: 0.2em;
+}
+
+.footer a:hover {
+  color: var(--on-surface);
+}
+
+/* 404 */
+
+.lost {
+  min-height: 100vh;
+  min-height: 100svh;
+  display: grid;
+  place-content: center;
+  justify-items: start;
+  gap: 2rem;
+}
+
+.lost p {
+  margin: 0;
+  font-size: 1.25rem;
+}
+
+/* One moment of motion: the sticker gets stuck on */
+
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  /* Transform only: if animations never run (background tab, crawler), the sticker still shows */
+  .sticker {
+    animation: stick 0.6s cubic-bezier(0.2, 0.8, 0.25, 1.15) 0.1s both;
+  }
+
+  @keyframes stick {
+    from {
+      transform: translateY(-0.12em) rotate(-9deg) scale(1.1);
+    }
+
+    to {
+      transform: rotate(-3deg);
+    }
+  }
+}
