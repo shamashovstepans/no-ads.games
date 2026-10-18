@@ -9,7 +9,9 @@ Plain HTML and CSS, no build step. GitHub Pages serves the repository root at ht
 | `styles.css` | All styles; colour tokens at the top, one set per game band |
 | `404.html` | Shown by GitHub Pages for any missing address (uses root-absolute paths) |
 | `assets/likes.js` | Like buttons, their celebration and sound |
-| `server/` | The likes service, deployed to Railway |
+| `assets/feedback.js` | The corner Feedback button and its form |
+| `inbox/index.html` | Private page for reading feedback (needs the inbox key) |
+| `server/` | The likes and feedback service, deployed to Railway |
 | `assets/icons/` | App icons, 384 px WebP, from each game's repository |
 | `assets/shots/` | Screenshots, 540 × 1170 WebP (Pocket Metropolis: 356 × 636 renders) |
 | `assets/og.png` | 1200 × 630 share image for link previews |
@@ -50,6 +52,8 @@ no-ads.games, so local previews never count. `assets/analytics.js` adds these ev
 | `game-viewed` | `game` | A game band reaches the middle of the screen (once per visit) |
 | `footer-link` | `game`, `link` (`support` or `privacy`) | A support or privacy link is opened |
 | `like` / `unlike` | `game` | A heart is tapped |
+| `feedback-open` | | The Feedback button is tapped |
+| `feedback-sent` | `topic` | A feedback message is sent |
 
 To tag an element, give it `data-event="name"`; its other `data-*` attributes become the event data.
 
@@ -75,6 +79,18 @@ The page keeps a random visitor ID in `localStorage` (`nag.visitor`) and talks t
 - **Deploy a change:** `cd server && railway up --service likes`.
 
 If the service can't be reached, the hearts stay hidden and the rest of the page works as before.
+
+## Feedback
+
+The Feedback button (bottom right) opens a short form: topic (a game, the site or something else), message
+(2–2000 characters) and an optional email for replies. It goes to the same service as the likes.
+
+- **Read it:** https://no-ads.games/inbox/, unlocked with the inbox key, which is kept on that device. The key is
+  the service's `ADMIN_TOKEN` variable (`railway variable list --service likes`); a copy is in
+  `.claude/inbox-key.txt`, which is not committed.
+- **API:** `POST /feedback` (public), `GET /feedback` and `DELETE /feedback/<id>` (with `Authorization: Bearer <key>`).
+- **Spam:** a hidden field bots fill in, and 5 messages per network per hour. IPs are not stored.
+- **Stored:** topic, message, email if given, the page and the browser's user agent (to see the device).
 
 ## Mini games (parked)
 

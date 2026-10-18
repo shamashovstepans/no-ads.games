@@ -6,6 +6,7 @@
   --on-surface-soft: #4f596a;
   --signal: #e0362b;
   --sticker-ink: #1a2130;
+  --error: #b3261e;
 
   --drift-bg: #170f24;
   --drift-ink: #f7f2fc;
@@ -33,6 +34,7 @@
     --surface: #171b23;
     --on-surface: #eef1f5;
     --on-surface-soft: #a9b2c0;
+    --error: #ff8a80;
   }
 }
 
@@ -587,6 +589,237 @@ a {
 
 .footer a:hover {
   color: var(--on-surface);
+}
+
+/* Feedback: a little sticker in the corner opens the form (assets/feedback.js) */
+
+.feedback-open {
+  position: fixed;
+  right: max(1rem, env(safe-area-inset-right));
+  bottom: max(1rem, env(safe-area-inset-bottom));
+  z-index: 5;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  min-height: 2.9rem;
+  padding: 0 1.15rem 0 0.95rem;
+  font: 700 0.9375rem / 1 var(--text);
+  color: var(--sticker-ink);
+  background: #fff;
+  border: 0;
+  border-radius: 999px;
+  box-shadow:
+    inset 0 0 0 2px #fff,
+    inset 0 0 0 4px var(--signal),
+    0 10px 24px -10px rgb(0 0 0 / 0.5);
+  rotate: -3deg;
+  cursor: pointer;
+  user-select: none;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    scale 0.25s cubic-bezier(0.3, 1.6, 0.5, 1),
+    rotate 0.25s cubic-bezier(0.3, 1.6, 0.5, 1),
+    translate 0.2s ease,
+    box-shadow 0.2s;
+}
+
+.feedback-open__icon {
+  width: 1.2rem;
+  height: 1.2rem;
+  fill: var(--signal);
+}
+
+.feedback-open.is-pressed {
+  scale: 0.9;
+  transition-duration: 0.08s;
+}
+
+@media (hover: hover) {
+  .feedback-open:hover {
+    box-shadow:
+      inset 0 0 0 2px #fff,
+      inset 0 0 0 4px var(--signal),
+      0 16px 30px -12px rgb(0 0 0 / 0.55);
+  }
+}
+
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .feedback-open:hover {
+    rotate: 0deg;
+    translate: 0 -3px;
+  }
+}
+
+.feedback {
+  width: min(30rem, calc(100% - 2rem));
+  max-height: calc(100dvh - 2rem);
+  padding: clamp(1.25rem, 4vw, 2rem);
+  color: var(--on-surface);
+  background: var(--surface);
+  border: 0;
+  border-radius: 1.5rem;
+  box-shadow: 0 30px 80px -24px rgb(0 0 0 / 0.6);
+}
+
+.feedback::backdrop {
+  background: rgb(10 12 20 / 0.55);
+  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(4px);
+}
+
+.feedback__title {
+  margin: 0;
+  font: 400 2rem / 1 var(--display);
+}
+
+.feedback__lead {
+  margin: 0.6rem 0 0;
+  font-size: 1rem;
+  line-height: 1.5;
+  color: var(--on-surface-soft);
+}
+
+.feedback__topics {
+  margin: 1.25rem 0 0;
+  padding: 0;
+  border: 0;
+}
+
+.feedback__topics legend,
+.feedback__field > span:first-child {
+  margin-bottom: 0.5rem;
+  padding: 0;
+  font-size: 0.9375rem;
+  font-weight: 700;
+}
+
+.feedback__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.feedback__chips label {
+  position: relative;
+}
+
+/* The radio stays focusable and clickable, laid over its chip */
+.feedback__chips input {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.feedback__chips span {
+  display: inline-block;
+  padding: 0.5rem 0.85rem;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  border: 2px solid rgb(128 128 128 / 0.4);
+  border-radius: 999px;
+  transition: background-color 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.feedback__chips input:checked + span {
+  color: var(--surface);
+  background: var(--on-surface);
+  border-color: var(--on-surface);
+}
+
+.feedback__chips input:focus-visible + span {
+  outline: 3px solid currentColor;
+  outline-offset: 2px;
+}
+
+.feedback__field {
+  display: grid;
+  margin-top: 1.1rem;
+}
+
+.feedback__hint {
+  font-weight: 400;
+  color: var(--on-surface-soft);
+}
+
+.feedback__field textarea,
+.feedback__field input {
+  width: 100%;
+  padding: 0.75rem 0.9rem;
+  font: 400 1rem / 1.5 var(--text);
+  color: inherit;
+  background: rgb(128 128 128 / 0.08);
+  border: 2px solid rgb(128 128 128 / 0.35);
+  border-radius: 0.9rem;
+}
+
+.feedback__field textarea {
+  min-height: 7.5rem;
+  resize: vertical;
+}
+
+.feedback__field textarea:focus,
+.feedback__field input:focus {
+  outline: none;
+  border-color: var(--on-surface);
+}
+
+.feedback__count {
+  min-height: 1.2em;
+  margin-top: 0.3rem;
+  font-size: 0.8125rem;
+  color: var(--on-surface-soft);
+}
+
+.feedback__trap {
+  position: absolute;
+  left: -10000px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+.feedback__error {
+  margin: 0.75rem 0 0;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--error);
+}
+
+.feedback__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+}
+
+.feedback__actions button {
+  min-height: 3rem;
+  padding: 0 1.4rem;
+  font: 700 1rem / 1 var(--text);
+  color: inherit;
+  background: none;
+  border: 2px solid rgb(128 128 128 / 0.4);
+  border-radius: 999px;
+  cursor: pointer;
+  transition: scale 0.2s cubic-bezier(0.3, 1.6, 0.5, 1);
+}
+
+.feedback__actions button:active {
+  scale: 0.94;
+}
+
+.feedback__actions .feedback__send {
+  color: var(--surface);
+  background: var(--on-surface);
+  border-color: var(--on-surface);
+}
+
+.feedback__actions .feedback__send:disabled {
+  opacity: 0.6;
+  cursor: progress;
 }
 
 /* Confirmation for the ?notrack / ?track switch */

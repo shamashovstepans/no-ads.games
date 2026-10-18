@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Feedback inbox | No Ads Games</title>
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="color-scheme" content="light dark">
+  <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bagel+Fat+One&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="../styles.css">
+  <style>
+    .inbox { padding-block: clamp(2rem, 1rem + 4vw, 4rem); max-width: 46rem; }
+    .inbox h1 { margin: 0; font: 400 clamp(2rem, 1.5rem + 2vw, 2.75rem) / 1 var(--display); }
+    .inbox__bar { display: flex; flex-wrap: wrap; align-items: center; gap: 0.75rem 1rem; margin-top: 1rem; color: var(--on-surface-soft); }
+    .inbox__bar button, .inbox__unlock button, .item__delete {
+      min-height: 2.5rem; padding: 0 1rem; font: 600 0.9375rem / 1 var(--text); color: inherit;
+      background: none; border: 2px solid rgb(128 128 128 / 0.4); border-radius: 999px; cursor: pointer;
+    }
+    .inbox__unlock { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-top: 1.5rem; }
+    .inbox__unlock input {
+      flex: 1 1 16rem; min-height: 3rem; padding: 0 1rem; font: 400 1rem var(--text); color: inherit;
+      background: rgb(128 128 128 / 0.08); border: 2px solid rgb(128 128 128 / 0.35); border-radius: 0.9rem;
+    }
+    .inbox__unlock button { min-height: 3rem; color: var(--surface); background: var(--on-surface); border-color: var(--on-surface); }
+    .inbox__note { margin: 1rem 0 0; color: var(--on-surface-soft); }
+    .inbox__error { margin: 1rem 0 0; font-weight: 600; color: var(--error); }
+    .inbox__list { display: grid; gap: 1rem; margin: 1.5rem 0 0; padding: 0; list-style: none; }
+    .item { padding: 1.1rem 1.25rem; background: rgb(128 128 128 / 0.08); border-radius: 1.1rem; }
+    .item__head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.4rem 0.75rem; font-size: 0.9375rem; }
+    .item__topic { font-weight: 700; }
+    .item__when { color: var(--on-surface-soft); }
+    .item__message { margin: 0.6rem 0 0; white-space: pre-wrap; overflow-wrap: anywhere; }
+    .item__foot { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem 1rem; margin-top: 0.8rem; font-size: 0.875rem; color: var(--on-surface-soft); }
+    .item__foot a { color: var(--on-surface); font-weight: 600; }
+    .item__delete { margin-left: auto; min-height: 2.25rem; }
+  </style>
+</head>
+<body>
+  <main class="wrap inbox">
+    <h1>Feedback inbox</h1>
+
+    <form class="inbox__unlock" hidden>
+      <input name="key" type="password" autocomplete="current-password" placeholder="Inbox key" aria-label="Inbox key" required>
+      <button type="submit">Open inbox</button>
+    </form>
+
+    <div class="inbox__bar" hidden>
+      <span class="inbox__total" aria-live="polite"></span>
+      <button class="inbox__refresh" type="button">Refresh</button>
+      <button class="inbox__forget" type="button">Forget key on this device</button>
+    </div>
+
+    <p class="inbox__error" role="alert" hidden></p>
+    <ul class="inbox__list"></ul>
+  </main>
+
+  <script>
+    // Reads feedback from the likes service. The key is kept on this device only (localStorage).
+    // Every message is written with textContent, so nothing a visitor types can run on this page.
+    (() => {
+      const API = "https://likes-production-c4ae.up.railway.app";
+      const TOPICS = {
+        "drift-survivors": "Drift Survivors", "pocket-cosmo": "Pocket Cosmo", "pocket-metropolis": "Pocket Metropolis",
+        site: "This site", other: "Something else",
+      };
+      const $ = (selector) => document.querySelector(selector);
+      const unlock = $(".inbox__unlock"), bar = $(".inbox__bar"), list = $(".inbox__list"), error = $(".inbox__error");
+      const storage = {
+        get: () => { try { return localStorage.getItem("nag.inbox.key"); } catch { return null; } },
+        set: (v) => { try { v ? localStorage.setItem("nag.inbox.key", v) : localStorage.removeItem("nag.inbox.key"); } catch {} },
+      };
+      let key = storage.get();
+
+      const ago = new Intl.RelativeTimeFormat("en", { numeric: "auto" });
+      function when(ms) {
+        const minutes = Math.round((ms - Date.now()) / 60000);
+        if (Math.abs(minutes) < 60) return ago.format(minutes, "minute");
+        const hours = Math.round(minutes / 60);
+        if (Math.abs(hours) < 48) return ago.format(hours, "hour");
+        return ago.format(Math.round(hours / 24), "day");
+      }
+      function device(ua = "") {
+        const os = /iPhone/.test(ua) ? "iPhone" : /iPad/.test(ua) ? "iPad" : /Android/.test(ua) ? "Android"
+          : /Mac OS X/.test(ua) ? "Mac" : /Windows/.test(ua) ? "Windows" : /Linux/.test(ua) ? "Linux" : "";
+        const browser = /Edg\//.test(ua) ? "Edge" : /CriOS|Chrome\//.test(ua) ? "Chrome" : /FxiOS|Firefox\//.test(ua) ? "Firefox"
+          : /Safari\//.test(ua) ? "Safari" : "";
+        return [os, browser].filter(Boolean).join(", ") || "Unknown device";
+      }
+      const el = (tag, className, text) => {
+        const node = document.createElement(tag);
+        if (className) node.className = className;
+        if (text !== undefined) node.textContent = text;
+        return node;
+      };
+
+      const showError = (text) => { error.textContent = text; error.hidden = !text; };
+      const locked = () => { unlock.hidden = false; bar.hidden = true; list.replaceChildren(); unlock.elements.key.focus(); };
+
+      async function call(path, method = "GET") {
+        const response = await fetch(API + path, { method, headers: { Authorization: `Bearer ${key}` } });
+        if (response.status === 401) throw Object.assign(new Error("bad key"), { status: 401 });
+        if (!response.ok) throw new Error(response.status);
+        return response.json();
+      }
+
+      async function load() {
+        showError("");
+        try {
+          const { items } = await call("/feedback");
+          storage.set(key);
+          unlock.hidden = true;
+          bar.hidden = false;
+          $(".inbox__total").textContent = items.length === 1 ? "1 message" : `${items.length} messages`;
+          list.replaceChildren(...items.map(render));
+          if (!items.length) list.append(el("li", "inbox__note", "No messages yet. They'll show up here when visitors send them."));
+        } catch (err) {
+          if (err.status === 401) {
+            storage.set(null);
+            key = null;
+            locked();
+            showError("That key didn't work. Check it and try again.");
+          } else showError("Couldn't load messages. Check your connection and refresh.");
+        }
+      }
+
+      function render(item) {
+        const li = el("li", "item");
+        const head = el("div", "item__head");
+        head.append(el("span", "item__topic", TOPICS[item.topic] || item.topic));
+        const time = el("time", "item__when", when(item.created_at));
+        time.dateTime = new Date(item.created_at).toISOString();
+        time.title = new Date(item.created_at).toLocaleString();
+        head.append(time);
+        const foot = el("div", "item__foot");
+        if (item.email) {
+          const reply = el("a", "", `Reply to ${item.email}`);
+          reply.href = `mailto:${encodeURIComponent(item.email)}?subject=${encodeURIComponent("Re: your feedback on no-ads.games")}`;
+          foot.append(reply);
+        }
+        foot.append(el("span", "", device(item.user_agent || "")));
+        if (item.page) foot.append(el("span", "", `from ${item.page}`));
+        const remove = el("button", "item__delete", "Delete");
+        remove.type = "button";
+        remove.addEventListener("click", async () => {
+          if (!confirm("Delete this message? This can't be undone.")) return;
+          try {
+            await call(`/feedback/${item.id}`, "DELETE");
+            load();
+          } catch {
+            showError("Couldn't delete it. Try again.");
+          }
+        });
+        foot.append(remove);
+        li.append(head, el("p", "item__message", item.message), foot);
+        return li;
+      }
+
+      unlock.addEventListener("submit", (e) => {
+        e.preventDefault();
+        key = unlock.elements.key.value.trim();
+        if (key) load();
+      });
+      $(".inbox__refresh").addEventListener("click", load);
+      $(".inbox__forget").addEventListener("click", () => { storage.set(null); key = null; locked(); });
+
+      key ? load() : locked();
+    })();
+  </script>
+</body>
+</html>
