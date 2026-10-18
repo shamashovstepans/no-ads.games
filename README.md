@@ -8,9 +8,7 @@ Plain HTML and CSS, no build step. GitHub Pages serves the repository root at ht
 | `index.html` | The page: sticker hero, one band per game, support and privacy links |
 | `styles.css` | All styles; colour tokens at the top, one set per game band |
 | `404.html` | Shown by GitHub Pages for any missing address (uses root-absolute paths) |
-| `assets/likes.js` | Like buttons, their per-game celebrations and sounds |
-| `assets/toys.js` | "Try it here" player that opens a game's mini game |
-| `toys/<game>/index.html` | One self-contained mini game per game (drift, cosmo, metropolis) |
+| `assets/likes.js` | Like buttons, their celebration and sound |
 | `server/` | The likes service, deployed to Railway |
 | `assets/icons/` | App icons, 384 px WebP, from each game's repository |
 | `assets/shots/` | Screenshots, 540 × 1170 WebP (Pocket Metropolis: 356 × 636 renders) |
@@ -52,9 +50,6 @@ no-ads.games, so local previews never count. `assets/analytics.js` adds these ev
 | `game-viewed` | `game` | A game band reaches the middle of the screen (once per visit) |
 | `footer-link` | `game`, `link` (`support` or `privacy`) | A support or privacy link is opened |
 | `like` / `unlike` | `game` | A heart is tapped |
-| `toy-open` | `game` | "Try it here" is tapped |
-| `toy-start` / `toy-end` | `game`, `score` on end | A mini game run starts or ends |
-| `toy-cta` | `game` | The App Store link inside a mini game is tapped |
 
 To tag an element, give it `data-event="name"`; its other `data-*` attributes become the event data.
 
@@ -81,12 +76,10 @@ The page keeps a random visitor ID in `localStorage` (`nag.visitor`) and talks t
 
 If the service can't be reached, the hearts stay hidden and the rest of the page works as before.
 
-## Mini games
+## Mini games (parked)
 
-"Try it here" opens `toys/<game>/` in a dialog (full screen on phones). Each toy is one self-contained HTML file
-that also works opened on its own, and reports to the page with `postMessage`:
-`{ source: "nag-toy", game, type }` where `type` is `ready`, `start`, `end` (with `score`), `cta` or `like`.
-Toys and like sounds share one switch, `localStorage["nag.sound"] = "off"`, toggled by the speaker button in a toy.
+A mini game per game (one-finger drift, grow a star, call settlers) was built and taken off the site.
+They live on the `minigames` branch: `toys/<game>/index.html` plus the `assets/toys.js` player.
 
 ## Deploy (GitHub Pages)
 
