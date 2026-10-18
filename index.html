@@ -53,6 +53,8 @@
   </script>
   <script defer src="https://cloud.umami.is/script.js" data-website-id="434da60d-2257-483d-8dd3-50d081fe6aae" data-domains="no-ads.games"></script>
   <script defer src="assets/analytics.js"></script>
+  <script defer src="assets/likes.js"></script>
+  <script defer src="assets/toys.js"></script>
 </head>
 <body>
   <header class="hero">
@@ -108,6 +110,11 @@
             <a class="store-badge" href="https://apps.apple.com/app/apple-store/id6773509783?pt=127670757&amp;ct=no-ads.games&amp;mt=8" data-event="app-store-click" data-game="drift-survivors">
               <img src="https://toolbox.marketingtools.apple.com/api/v2/badges/download-on-the-app-store/black/en-us" width="120" height="40" alt="Download Drift Survivors on the App Store">
             </a>
+            <button class="play" type="button" data-toy="drift-survivors" data-src="toys/drift/" data-name="Drift Survivors"><svg class="play__icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M8 5.2v13.6L19 12z"/></svg>Try it here</button>
+            <button class="like" type="button" data-like="drift-survivors" data-name="Drift Survivors" aria-pressed="false" hidden>
+              <svg class="like__heart" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 20.6s-7.3-4.6-9.6-8.6C.7 9.1 2 5.6 5.1 4.6c2.3-.8 4.8.1 6.1 2.1l.8 1.2.8-1.2c1.3-2 3.8-2.9 6.1-2.1 3.1 1 4.4 4.5 2.7 7.4-2.3 4-9.6 8.6-9.6 8.6z"/></svg>
+              <span class="like__count">0</span>
+            </button>
             <p class="game__note">Free on iPhone.</p>
           </div>
         </div>
@@ -130,6 +137,11 @@
             <a class="store-badge" href="https://apps.apple.com/app/apple-store/id6810904381?pt=127670757&amp;ct=no-ads.games&amp;mt=8" data-event="app-store-click" data-game="pocket-cosmo">
               <img src="https://toolbox.marketingtools.apple.com/api/v2/badges/download-on-the-app-store/black/en-us" width="120" height="40" alt="Download Pocket Cosmo on the App Store" loading="lazy">
             </a>
+            <button class="play" type="button" data-toy="pocket-cosmo" data-src="toys/cosmo/" data-name="Pocket Cosmo"><svg class="play__icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M8 5.2v13.6L19 12z"/></svg>Try it here</button>
+            <button class="like" type="button" data-like="pocket-cosmo" data-name="Pocket Cosmo" aria-pressed="false" hidden>
+              <svg class="like__heart" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 20.6s-7.3-4.6-9.6-8.6C.7 9.1 2 5.6 5.1 4.6c2.3-.8 4.8.1 6.1 2.1l.8 1.2.8-1.2c1.3-2 3.8-2.9 6.1-2.1 3.1 1 4.4 4.5 2.7 7.4-2.3 4-9.6 8.6-9.6 8.6z"/></svg>
+              <span class="like__count">0</span>
+            </button>
             <p class="game__note">Free on iPhone. Available in select countries for now.</p>
           </div>
         </div>
@@ -150,6 +162,11 @@
           <p class="game__text">Settlers pour out under your finger, run along the roads and move in. Grow a thatched village into a walled town, an industrial city and finally a modern metropolis, starting with real cities like Minsk, Prague and Warsaw.</p>
           <div class="game__cta">
             <p class="soon">Coming soon to iPhone</p>
+            <button class="play" type="button" data-toy="pocket-metropolis" data-src="toys/metropolis/" data-name="Pocket Metropolis"><svg class="play__icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M8 5.2v13.6L19 12z"/></svg>Try it here</button>
+            <button class="like" type="button" data-like="pocket-metropolis" data-name="Pocket Metropolis" aria-pressed="false" hidden>
+              <svg class="like__heart" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 20.6s-7.3-4.6-9.6-8.6C.7 9.1 2 5.6 5.1 4.6c2.3-.8 4.8.1 6.1 2.1l.8 1.2.8-1.2c1.3-2 3.8-2.9 6.1-2.1 3.1 1 4.4 4.5 2.7 7.4-2.3 4-9.6 8.6-9.6 8.6z"/></svg>
+              <span class="like__count">0</span>
+            </button>
           </div>
         </div>
         <ol class="shots" aria-label="How a city grows">
@@ -183,5 +200,11 @@
       </nav>
     </div>
   </footer>
+
+  <dialog class="toy-player" aria-label="Mini game">
+    <button class="toy-player__close" type="button" aria-label="Close mini game">
+      <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M6 6l12 12M18 6 6 18"/></svg>
+    </button>
+  </dialog>
 </body>
 </html>

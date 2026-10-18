@@ -1,0 +1,12 @@
+{
+  "name": "no-ads-likes",
+  "private": true,
+  "description": "Like counts for no-ads.games",
+  "type": "module",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "start": "node --disable-warning=ExperimentalWarning server.js"
+  }
+}

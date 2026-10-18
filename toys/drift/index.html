@@ -1,0 +1,793 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Drift Survivors: try it</title>
+<meta name="theme-color" content="#170f24">
+<link rel="icon" href="../../assets/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<!-- Fonts load without blocking the game; system fonts stand in until they arrive -->
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bagel+Fat+One&display=swap" media="print" onload="this.media='all'">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700&display=swap" media="print" onload="this.media='all'">
+<style>
+:root {
+  --ink: #f7f2fc; --soft: #c4b9d6; --pink: #ff3d8b; --orange: #ff8a3d; --gold: #ffc94a;
+  --display: "Bagel Fat One", "Arial Rounded MT Bold", "Trebuchet MS", system-ui, sans-serif;
+  --text: "Onest", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --top: max(10px, env(safe-area-inset-top));
+}
+* { box-sizing: border-box; }
+html, body {
+  margin: 0; height: 100%; overflow: hidden; background: #170f24; color: var(--ink); font: 500 16px/1.35 var(--text);
+  -webkit-text-size-adjust: 100%; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; -webkit-tap-highlight-color: transparent;
+}
+p, h1 { margin: 0; }
+canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; display: block; touch-action: none; cursor: crosshair; }
+button { font: inherit; color: inherit; cursor: pointer; touch-action: manipulation; }
+:focus-visible { outline: 3px solid var(--ink); outline-offset: 3px; }
+.off { opacity: 0; }
+
+/* Score and multiplier while driving */
+.hud { position: fixed; top: var(--top); left: 64px; right: 64px; text-align: center; pointer-events: none; transition: opacity .3s; }
+.hud__score { font: 700 clamp(24px, 7.5vmin, 34px)/1.1 var(--text); font-variant-numeric: tabular-nums; text-shadow: 0 0 16px rgb(255 61 139 / .6); }
+.hud__mult { font-weight: 700; font-size: 15px; color: var(--orange); text-shadow: 0 0 10px rgb(255 138 61 / .6); }
+.hud__mult b { color: var(--gold); }
+.mute {
+  position: fixed; z-index: 1; top: calc(var(--top) - 4px); right: max(6px, env(safe-area-inset-right)); width: 44px; height: 44px;
+  padding: 0; border: 0; border-radius: 50%; background: rgb(255 255 255 / .08); display: grid; place-items: center;
+}
+.mute svg { width: 22px; height: 22px; }
+.mute[aria-pressed="true"] .x, .mute[aria-pressed="false"] .waves { display: none; }
+
+/* Intro hint */
+.hint { position: fixed; left: 16px; right: 16px; bottom: max(14%, 64px); text-align: center; pointer-events: none; text-shadow: 0 2px 14px rgb(0 0 0 / .8); transition: opacity .4s; }
+.hint__main { font: 700 clamp(20px, 6vmin, 26px)/1.15 var(--text); }
+.hint__sub { margin-top: 6px; font-size: 14px; color: var(--soft); }
+.hint__finger {
+  width: 38px; height: 38px; margin: 0 auto 14px; border: 2px solid rgb(255 255 255 / .85); border-radius: 50%;
+  box-shadow: 0 0 18px rgb(255 61 139 / .7); animation: swipe 2s ease-in-out infinite;
+}
+@keyframes swipe { 0%, 100% { transform: translateX(-44px); } 50% { transform: translateX(44px); } }
+
+/* End card */
+.end {
+  position: fixed; inset: 0; display: grid; place-items: center; padding: 16px; overflow-y: auto;
+  background: radial-gradient(120% 90% at 50% 40%, rgb(23 15 36 / .3), rgb(9 5 16 / .82));
+  visibility: hidden; opacity: 0; transition: opacity .35s, visibility 0s .35s;
+}
+.end.show { visibility: visible; opacity: 1; transition: opacity .35s; }
+.end:focus { outline: none; }
+.card {
+  width: min(100%, 340px); padding: 18px 18px 14px; border-radius: 24px; text-align: center; container-type: inline-size;
+  background: rgb(28 18 44 / .86); border: 1px solid rgb(255 255 255 / .09); box-shadow: 0 24px 60px rgb(0 0 0 / .5);
+  -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
+}
+.end__title {
+  font: 400 26px/1.1 var(--display); background: linear-gradient(90deg, var(--pink), var(--orange));
+  -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+}
+.end__score { margin: 6px 0 4px; font: 400 clamp(40px, 13vw, 56px)/1.05 var(--display); white-space: nowrap; text-shadow: 0 0 26px rgb(255 61 139 / .45); }
+@supports (width: 1cqw) { .end__score { font-size: min(56px, 100cqw / (var(--len, 6) * .7)); } }
+.end__best { margin-bottom: 14px; font-weight: 600; font-size: 15px; color: var(--soft); }
+.end__best.new { color: var(--gold); }
+.cta {
+  display: flex; align-items: center; justify-content: center; gap: 10px; min-height: 52px; padding: 8px 12px; border-radius: 16px;
+  text-decoration: none; font: 700 17px/1.15 var(--text); color: #1d0a1c; touch-action: manipulation;
+  background: linear-gradient(90deg, var(--pink), var(--orange)); box-shadow: 0 8px 26px rgb(255 61 139 / .35);
+}
+.cta img { width: 32px; height: 32px; border-radius: 8px; }
+.note { margin: 6px 0 10px; font-size: 13px; color: var(--soft); }
+.again { width: 100%; min-height: 48px; border: 2px solid rgb(255 255 255 / .22); border-radius: 16px; background: rgb(255 255 255 / .06); font-weight: 700; font-size: 17px; }
+.cta:active, .again:active { transform: scale(.98); }
+
+/* A phone on its side */
+@media (max-height: 480px) {
+  .hint { bottom: 12px; }
+  .hint__finger { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hint__finger { animation: none; }
+  .hud, .hint, .end, .end.show { transition: none; }
+}
+</style>
+</head>
+<body>
+<canvas id="game" role="img" aria-label="Drift Survivors mini game"></canvas>
+
+<div class="hud off" id="hud" aria-hidden="true">
+  <div class="hud__score" id="score">0</div>
+  <div class="hud__mult"><span id="combo">×1</span> <b id="nitro"></b></div>
+</div>
+
+<button class="mute" id="mute" type="button" aria-pressed="true" aria-label="Sound on">
+  <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+    <path d="M4 9.5h3.5L12 6v12l-4.5-3.5H4z" fill="currentColor"/>
+    <g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+      <path class="waves" d="M15.5 9.5a3.5 3.5 0 0 1 0 5M18 7a7 7 0 0 1 0 10"/>
+      <path class="x" d="M16 10l4 4M20 10l-4 4"/>
+    </g>
+  </svg>
+</button>
+
+<div class="hint" id="hint">
+  <div class="hint__finger" aria-hidden="true"></div>
+  <p class="hint__main">Drag to drive</p>
+  <p class="hint__sub">Grab nitro. Your skid trail wrecks cops.</p>
+</div>
+
+<div class="end" id="end" role="dialog" aria-labelledby="end-title" tabindex="-1">
+  <div class="card">
+    <h1 class="end__title" id="end-title">Busted!</h1>
+    <p class="end__score" id="end-score">0</p>
+    <p class="end__best" id="end-best">Best 0</p>
+    <a class="cta" id="cta" href="https://apps.apple.com/app/apple-store/id6773509783?pt=127670757&amp;ct=no-ads.games-toy&amp;mt=8" target="_top"><img src="../../assets/icons/drift-survivors.webp" width="32" height="32" alt="" onerror="this.remove()">Get Drift Survivors</a>
+    <p class="note">Free on iPhone</p>
+    <button class="again" id="again" type="button">Drive again</button>
+  </div>
+</div>
+
+<script type="module">
+const { abs, atan2, ceil, cos, floor, hypot, max, min, PI, random, round, sin } = Math;
+const $ = (id) => document.getElementById(id);
+const canvas = $("game"), ctx = canvas.getContext("2d");
+const motion = matchMedia("(prefers-reduced-motion: reduce)");
+const NF = new Intl.NumberFormat("en-US"), fmt = (n) => NF.format(floor(n));
+const rnd = (a, b) => a + random() * (b - a);
+const clamp = (v, a, b) => (v < a ? a : v > b ? b : v);
+const wrap = (a) => atan2(sin(a), cos(a));
+const quiet = (p) => p && p.catch && p.catch(() => {});
+
+// Messages for the page that embeds us (none when opened directly)
+function tell(type, extra) {
+  if (window.parent === window) return;
+  try { window.parent.postMessage({ source: "nag-toy", game: "drift-survivors", type, ...extra }, "*"); } catch (e) {}
+}
+
+// Storage can be blocked
+function load(key) { try { return localStorage.getItem(key); } catch (e) { return null; } }
+function store(key, value) { try { localStorage.setItem(key, value); } catch (e) {} }
+
+// ---- tuning ----
+// Car handling from the real game (physics.js, tunables.js)
+const CARL = 18, CARW = 9, MAXSPD = 440, ENGINE = 1050, TURN = 4.0, DRAGF = 0.988, SLIP = 0.90, SLIPB = 0.95;
+// Scoring from the real game: points x combo x nitro
+const BASE_PTS = 100, DRIFT_PTS = 60, KILL_PTS = 200, MULT_MAX = 50, DECAY = 1.2, DRIFT_GAIN = 2.5, KILL_BOOST = 0.6;
+const DRIFT_MIN = 55, DRIFT_REF = 200, TRAIL_R = 8, NITRO_STEP = 2, NITRO_TIME = 1.5;
+// Cops: size, contact distance, calm start, seconds they aim ahead of the car at first
+const COP_R = 12, HIT_R = 28, GRACE = 5, LEAD = 0.25;
+const BEST_KEY = "nag.toy.drift.best", SOUND_KEY = "nag.sound";
+
+// ---- state ----
+let W = 1, H = 1, DPR = 1, Z = 1, VW = 1, VH = 1, CARSY = 0, bg = null;
+let state = "intro"; // intro, play, crash, over
+let car, cam, nitros, cops, skids, parts, pops;
+let t, score, mult, level, nitroT, nitroMult, driftMeter, spawnT, copT, skidGap, crashT;
+let shake = 0, flash = 0, clock = 0, best = parseInt(load(BEST_KEY), 10) || 0, freshBest = false;
+let driving = false, pointerId = null, px = 0, py = 0, raf = 0, last = 0, shown = "";
+
+function reset() {
+  car = { x: 0, y: 0, a: -PI / 2, vx: 0, vy: 0, spin: 0 };
+  cam = { x: 0, y: 0 };
+  nitros = []; cops = []; skids = []; parts = []; pops = [];
+  t = score = nitroT = nitroMult = driftMeter = copT = crashT = shake = flash = 0;
+  mult = level = skidGap = 1;
+  spawnT = 0.6;
+  driving = false; pointerId = null; shown = "";
+  for (let i = 0; i < 6; i++) spawnNitro(true);
+}
+
+const nitroMul = () => (nitroMult > 0 ? nitroMult : 1);
+
+// Nitro appears ahead but off the straight line, so you steer for it
+function spawnNitro(seed) {
+  const hx = cos(car.a), hy = sin(car.a);
+  const ahead = seed ? rnd(110, VH * 0.6) : rnd(VH * 0.35, VH * 0.85), side = (random() < 0.5 ? -1 : 1) * rnd(VW * 0.2, VW * 0.45);
+  nitros.push({ x: car.x + hx * ahead - hy * side, y: car.y + hy * ahead + hx * side, age: 0 });
+}
+
+// Cops come from behind; later ones are faster, sharper, aim further ahead, and some are armored
+function spawnCop() {
+  const k = t - GRACE, ang = car.a + PI + rnd(-1.5, 1.5), R = hypot(VW, VH) * 0.6;
+  const x = car.x + cos(ang) * R, y = car.y + sin(ang) * R;
+  cops.push({
+    x, y, a: atan2(car.y - y, car.x - x), sp: 470 + min(90, k * 1.1) + rnd(-15, 15), turn: 2.4 + min(0.8, k * 0.01),
+    lead: min(0.6, LEAD + k * 0.005), hp: random() < clamp((k - 30) / 60, 0, 0.7) ? 2 : 1, cd: 0, flash: random(), dead: false,
+  });
+}
+
+function burst(x, y, col, n, spd) {
+  for (let i = 0; i < n && parts.length < 300; i++) {
+    const an = rnd(0, 6.283), v = rnd(40, spd);
+    parts.push({ x, y, vx: cos(an) * v, vy: sin(an) * v, life: rnd(0.3, 0.7), col, r: rnd(2, 4.5) });
+  }
+}
+
+const pop = (x, y, text, col) => pops.push({ x, y, text, col, life: 0.9 });
+
+// ---- run flow ----
+function startRun() {
+  state = "play";
+  $("hint").classList.add("off");
+  $("hud").classList.remove("off");
+  tell("start");
+  audioWake();
+}
+
+function crash(cop) {
+  state = "crash";
+  crashT = 0.9;
+  cop.sp = 60;
+  car.spin = random() < 0.5 ? -7 : 7;
+  driving = false; pointerId = null;
+  burst(car.x, car.y, "#ff5a3c", 24, 320);
+  burst(car.x, car.y, "#ffd27a", 10, 200);
+  if (!motion.matches) { shake = 14; flash = 1; }
+  sfxCrash();
+  const final = floor(score);
+  freshBest = final > best;
+  if (freshBest) { best = final; store(BEST_KEY, String(best)); }
+  tell("end", { score: final });
+}
+
+function showEnd() {
+  state = "over";
+  const s = fmt(score);
+  $("end-score").textContent = s;
+  $("end-score").style.setProperty("--len", max(4, s.length));
+  $("end-best").textContent = freshBest ? "New best!" : "Best " + fmt(best);
+  $("end-best").classList.toggle("new", freshBest);
+  $("hud").classList.add("off");
+  $("end").classList.add("show");
+  $("end").focus({ preventScroll: true });
+  setTimeout(() => { if (state === "over") audioSleep(); }, 300);
+}
+
+function driveAgain() {
+  $("end").classList.remove("show");
+  reset();
+  startRun();
+  startLoop();
+}
+
+// ---- update ----
+function update(dt) {
+  const play = state === "play", f60 = dt * 60, far = hypot(VW, VH);
+  if (play) t += dt;
+  if (nitroT > 0 && (nitroT -= dt) <= 0) nitroT = nitroMult = 0;
+
+  const boost = nitroT > 0, pace = 1 + clamp((mult - 1) / 19, 0, 1) * 0.25;
+  const eMax = MAXSPD * (boost ? 1.3 : 1) * pace, eEng = ENGINE * (boost ? 1.3 : 1) * pace;
+  let speed = hypot(car.vx, car.vy);
+
+  // Steer toward the finger; turning needs speed to bite
+  if (play && driving && hypot(px - W / 2, py - CARSY) > 6) {
+    const want = atan2(py - CARSY, px - W / 2);
+    car.a += clamp(wrap(want - car.a) / 0.5, -1, 1) * TURN * (boost ? 1 : min(1, 0.35 + speed / eMax)) * dt;
+  } else if (!play) car.a += car.spin * dt;
+
+  // Grip eats the sideways slide, drag the forward speed: velocity lags heading, so it drifts
+  const hx = cos(car.a), hy = sin(car.a);
+  const vl = (car.vy * hx - car.vx * hy) * (boost ? SLIPB : SLIP) ** f60;
+  const vf = (car.vx * hx + car.vy * hy) * DRAGF ** f60 + (play ? (driving ? 1 : 0.5) : 0) * eEng * dt;
+  car.vx = hx * vf - hy * vl;
+  car.vy = hy * vf + hx * vl;
+  speed = hypot(car.vx, car.vy);
+  if (speed > eMax) { car.vx *= eMax / speed; car.vy *= eMax / speed; speed = eMax; }
+  car.x += car.vx * dt;
+  car.y += car.vy * dt;
+
+  // Drift depth and skid marks
+  const slide = abs(vl), drift = clamp((slide / eMax - 0.12) / 0.38, 0, 1);
+  driftMeter = clamp(driftMeter + (drift > 0.06 ? drift * 0.45 : -2) * dt, 0, 1);
+  skidGap += dt;
+  if (play && slide > DRIFT_MIN && skidGap > 0.012) {
+    const d = driftMeter, life = 1.2 * (1 + d), bx = car.x - hx * CARL * 0.7, by = car.y - hy * CARL * 0.7;
+    skids.push({ x1: bx + hy * CARW, y1: by - hx * CARW, x2: bx - hy * CARW, y2: by + hx * CARW, life, life0: life, d, join: skidGap < 0.05 });
+    skidGap = 0;
+    if (skids.length > 600) { skids.shift(); skids[0].join = false; }
+    if (d > 0.3 && random() < 0.3) burst(bx, by, "#ffb060", 1, 60);
+  }
+
+  // Score ticks, faster while drifting; the combo bleeds back toward x1
+  if (play) {
+    const di = clamp((slide - DRIFT_MIN) / (DRIFT_REF - DRIFT_MIN), 0, 1);
+    mult = clamp(mult + (DRIFT_GAIN * di - DECAY) * dt, 1, MULT_MAX);
+    score += (BASE_PTS + DRIFT_PTS * di) * mult * nitroMul() * dt;
+  }
+
+  const ck = min(1, dt * 6);
+  cam.x += (car.x + car.vx * 0.25 - cam.x) * ck;
+  cam.y += (car.y + car.vy * 0.25 - cam.y) * ck;
+
+  // Nitro, with a magnet
+  if (play && (spawnT -= dt) <= 0) {
+    if (nitros.length < 6) spawnNitro(false);
+    spawnT = t < 12 ? rnd(0.5, 0.8) : rnd(0.9, 1.4);
+  }
+  for (let i = nitros.length - 1; i >= 0; i--) {
+    const o = nitros[i], dx = car.x - o.x, dy = car.y - o.y, d = hypot(dx, dy);
+    o.age += dt;
+    if (play && d < 110) { const m = min(1, (6 + 500 / d) * dt); o.x += dx * m; o.y += dy * m; } // pull outruns the car
+    if (play && d < 34) { grab(o); nitros.splice(i, 1); }
+    else if (hypot(o.x - cam.x, o.y - cam.y) > far) nitros.splice(i, 1);
+  }
+
+  // Cops aim a bit ahead at a capped turn rate, so a hard drift makes them overshoot
+  if (play && t > GRACE && (copT -= dt) <= 0) {
+    if (cops.length < min(6, 1 + floor((t - GRACE) / 12))) spawnCop();
+    copT = rnd(1.6, 3);
+  }
+  for (const c of cops) {
+    const lead = min(1, hypot(car.x - c.x, car.y - c.y) / c.sp) * c.lead;
+    const want = atan2(car.y + car.vy * lead - c.y, car.x + car.vx * lead - c.x);
+    c.a += clamp(wrap(want - c.a), -c.turn * dt, c.turn * dt);
+    c.x += cos(c.a) * c.sp * dt;
+    c.y += sin(c.a) * c.sp * dt;
+    c.flash += dt;
+    c.cd -= dt;
+    if (!play || c.dead) continue;
+    if (c.cd <= 0 && onTrail(c)) {
+      if (--c.hp <= 0) { wreck(c); continue; }
+      c.cd = 0.6; // armor gone; one pass counts once
+      burst(c.x, c.y, "#ffffff", 8, 200);
+      sfxPop();
+    }
+    if (hypot(c.x - car.x, c.y - car.y) < HIT_R) { crash(c); continue; }
+    if (hypot(c.x - cam.x, c.y - cam.y) > far) c.dead = true; // lost us
+  }
+  if (cops.some((c) => c.dead)) cops = cops.filter((c) => !c.dead);
+
+  const drag = 0.92 ** f60;
+  for (let i = parts.length - 1; i >= 0; i--) {
+    const q = parts[i];
+    q.x += q.vx * dt; q.y += q.vy * dt; q.vx *= drag; q.vy *= drag;
+    if ((q.life -= dt) <= 0) parts.splice(i, 1);
+  }
+  for (let i = skids.length - 1; i >= 0; i--) {
+    if ((skids[i].life -= dt) > 0) continue;
+    if (skids[i + 1]) skids[i + 1].join = false;
+    skids.splice(i, 1);
+  }
+  for (let i = pops.length - 1; i >= 0; i--) if ((pops[i].life -= dt) <= 0) pops.splice(i, 1);
+
+  const lv = floor(mult);
+  if (play && lv > level) sfxRise(lv);
+  level = lv;
+  sfxFrame(speed, play && slide > DRIFT_MIN ? slide / max(60, speed) : 0);
+}
+
+function grab(o) {
+  nitroMult = nitroT > 0 ? nitroMult + NITRO_STEP : NITRO_STEP;
+  nitroT = min(3, nitroT + NITRO_TIME);
+  if (!motion.matches) shake = min(shake + 4, 10);
+  burst(o.x, o.y, "#ffe23b", 10, 220);
+  pop(o.x, o.y, "nitro ×" + nitroMult, "#ffd45a");
+  sfxZing(nitroMult);
+}
+
+// The skid trail is lethal to cops
+function onTrail(c) {
+  const r2 = (COP_R + TRAIL_R) ** 2;
+  return skids.some((s) => (s.x1 - c.x) ** 2 + (s.y1 - c.y) ** 2 < r2 || (s.x2 - c.x) ** 2 + (s.y2 - c.y) ** 2 < r2);
+}
+
+function wreck(c) {
+  c.dead = true;
+  burst(c.x, c.y, "#6ea0ff", 14, 260);
+  burst(c.x, c.y, "#ffffff", 6, 200);
+  sfxPop();
+  mult = min(MULT_MAX, mult + KILL_BOOST);
+  const pts = KILL_PTS * mult * nitroMul();
+  score += pts;
+  pop(c.x, c.y, "+" + fmt(pts), "#ffb27a");
+}
+
+// ---- drawing ----
+// Glow sprites, drawn additively
+function glow(stops) {
+  const c = document.createElement("canvas"), g = c.getContext("2d");
+  c.width = c.height = 64;
+  const gr = g.createRadialGradient(32, 32, 0, 32, 32, 32);
+  for (const [at, col] of stops) gr.addColorStop(at, col);
+  g.fillStyle = gr;
+  g.fillRect(0, 0, 64, 64);
+  return c;
+}
+const BLOOM = glow([[0, "rgba(255,226,59,1)"], [0.3, "rgba(255,176,32,.8)"], [1, "rgba(255,150,0,0)"]]);
+const CORE = glow([[0, "rgba(255,250,225,1)"], [0.3, "rgba(255,207,59,.95)"], [1, "rgba(255,170,30,0)"]]);
+const RED = glow([[0, "rgba(255,59,59,.55)"], [1, "rgba(255,59,59,0)"]]);
+const BLUE = glow([[0, "rgba(70,130,255,.65)"], [1, "rgba(70,130,255,0)"]]);
+const WHITE = glow([[0, "rgba(255,255,255,.9)"], [0.4, "rgba(200,220,255,.35)"], [1, "rgba(200,220,255,0)"]]);
+
+function sprite(img, x, y, r, a) {
+  ctx.globalAlpha = min(1, a);
+  ctx.drawImage(img, x - r, y - r, r * 2, r * 2);
+}
+
+function draw() {
+  const sx = shake ? rnd(-shake, shake) : 0, sy = shake ? rnd(-shake, shake) : 0;
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  ctx.globalCompositeOperation = "source-over";
+  ctx.globalAlpha = 1;
+  ctx.fillStyle = bg;
+  ctx.fillRect(0, 0, W, H);
+
+  // World space: the camera sits at (W/2, CARSY)
+  ctx.setTransform(DPR * Z, 0, 0, DPR * Z, DPR * (W / 2 + sx), DPR * (CARSY + sy));
+  ctx.translate(-cam.x, -cam.y);
+  grid(64, "rgba(150,100,255,0.09)", 1);
+  grid(256, "rgba(150,100,255,0.13)", 1.5);
+
+  ctx.globalCompositeOperation = "lighter";
+  drawSkids();
+  for (const o of nitros) {
+    const pulse = 0.5 + 0.5 * sin(clock * 4.5 + o.x * 0.05), sc = min(1, o.age / 0.35);
+    sprite(BLOOM, o.x, o.y, 30 * (1.6 + 0.3 * pulse) * sc, 0.4 * sc);
+    sprite(CORE, o.x, o.y, 13 * (1.3 + 0.2 * pulse) * sc, 0.95 * sc);
+  }
+  for (const c of cops) drawCar(c.x, c.y, c.a, c);
+  drawCar(car.x, car.y, car.a, null);
+
+  ctx.globalCompositeOperation = "lighter";
+  for (const q of parts) {
+    ctx.globalAlpha = min(1, q.life * 1.5);
+    ctx.fillStyle = q.col;
+    ctx.beginPath();
+    ctx.arc(q.x, q.y, q.r, 0, 6.2832);
+    ctx.fill();
+  }
+  ctx.globalCompositeOperation = "source-over";
+  ctx.font = "700 14px Onest, system-ui, sans-serif";
+  ctx.textAlign = "center";
+  for (const p of pops) {
+    ctx.globalAlpha = min(1, p.life * 2);
+    ctx.fillStyle = p.col;
+    ctx.fillText(p.text, p.x, p.y - 28 - (0.9 - p.life) * 40);
+  }
+
+  ctx.globalAlpha = 0.9;
+  for (const c of cops) blip(c);
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  ctx.globalAlpha = 1;
+  if (flash > 0) {
+    ctx.fillStyle = `rgba(255,90,110,${(flash * 0.35).toFixed(3)})`;
+    ctx.fillRect(0, 0, W, H);
+  }
+}
+
+function grid(G, col, lw) {
+  const x0 = cam.x - (W / 2 + 20) / Z, x1 = cam.x + (W / 2 + 20) / Z;
+  const y0 = cam.y - (CARSY + 20) / Z, y1 = cam.y + (H - CARSY + 20) / Z;
+  ctx.strokeStyle = col;
+  ctx.lineWidth = lw / Z;
+  ctx.beginPath();
+  for (let x = ceil(x0 / G) * G; x < x1; x += G) { ctx.moveTo(x, y0); ctx.lineTo(x, y1); }
+  for (let y = ceil(y0 / G) * G; y < y1; y += G) { ctx.moveTo(x0, y); ctx.lineTo(x1, y); }
+  ctx.stroke();
+}
+
+// Trail: hot pink on a light slide to orange on a deep drift; a wide soft halo, then a bright core
+function trailStyle(core, f, d) {
+  ctx.strokeStyle = `rgba(255,${round(61 + 77 * d)},${round(139 - 78 * d)},${f * (core ? 0.75 : 0.16 + 0.24 * d)})`;
+  ctx.lineWidth = (core ? 2.2 + 2.6 * d : 6 + 12 * d) * (0.6 + 0.4 * f);
+}
+
+// One polyline per wheel, split where the rounded style changes
+function drawSkids() {
+  ctx.lineCap = ctx.lineJoin = "round";
+  ctx.globalAlpha = 1;
+  for (let pass = 0; pass < 2; pass++) {
+    for (let w = 0; w < 2; w++) {
+      let key = -1, at = -1;
+      for (let i = 1; i < skids.length; i++) {
+        const s = skids[i], p = skids[i - 1];
+        if (!s.join) continue;
+        const f = ceil((s.life / s.life0) * 5) / 5, d = round(s.d * 4) / 4;
+        if (f * 10 + d !== key) {
+          if (key >= 0) ctx.stroke();
+          key = f * 10 + d;
+          trailStyle(pass, f, d);
+          ctx.beginPath();
+          at = -1;
+        }
+        if (at !== i - 1) ctx.moveTo(w ? p.x2 : p.x1, w ? p.y2 : p.y1);
+        ctx.lineTo(w ? s.x2 : s.x1, w ? s.y2 : s.y1);
+        at = i;
+      }
+      if (key >= 0) ctx.stroke();
+    }
+  }
+}
+
+// Player when cop is null; cops are white (armored: blue)
+function drawCar(x, y, a, cop) {
+  const ca = cos(a), sa = sin(a), on = cop && floor(cop.flash * 8) % 2;
+  ctx.globalCompositeOperation = "lighter";
+  sprite(cop ? BLUE : RED, x, y, 38, 0.9);
+  if (cop) sprite(on ? WHITE : BLUE, x - ca * 5, y - sa * 5, on ? 20 : 28, on ? 0.55 : 1);
+  else if (nitroT > 0 && state === "play") sprite(CORE, x - ca * (CARL + 8), y - sa * (CARL + 8), rnd(16, 24), 0.85);
+  ctx.globalCompositeOperation = "source-over";
+  ctx.globalAlpha = 1;
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.rotate(a);
+  ctx.beginPath();
+  if (ctx.roundRect) ctx.roundRect(-CARL, -CARW, CARL * 2, CARW * 2, 4);
+  else ctx.rect(-CARL, -CARW, CARL * 2, CARW * 2);
+  ctx.fillStyle = cop ? (cop.hp > 1 ? "#2c55e8" : "#e9eeff") : "#ff3b3b";
+  ctx.fill();
+  ctx.lineWidth = 2;
+  ctx.strokeStyle = cop ? "rgba(120,160,255,.95)" : "rgba(255,255,255,.55)";
+  ctx.stroke();
+  ctx.fillStyle = cop ? "#1b2142" : "rgba(0,0,0,.42)";
+  ctx.fillRect(CARL * 0.1, -CARW + 2, CARL * 0.42, CARW * 2 - 4);
+  if (cop) {
+    ctx.fillStyle = on ? "#3d7bff" : "#fff";
+    ctx.fillRect(-CARL * 0.4, -CARW + 2, 5, CARW - 2);
+    ctx.fillStyle = on ? "#fff" : "#3d7bff";
+    ctx.fillRect(-CARL * 0.4, 0, 5, CARW - 2);
+  }
+  ctx.restore();
+}
+
+// Edge arrow for an off-screen cop
+function blip(c) {
+  const x = W / 2 + (c.x - cam.x) * Z, y = CARSY + (c.y - cam.y) * Z;
+  if (x > -8 && x < W + 8 && y > -8 && y < H + 8) return;
+  const bx = clamp(x, 14, W - 14), by = clamp(y, 14, H - 14), a = atan2(y - by, x - bx);
+  ctx.setTransform(DPR * cos(a), DPR * sin(a), -DPR * sin(a), DPR * cos(a), DPR * bx, DPR * by);
+  ctx.fillStyle = floor(c.flash * 8) % 2 ? "#fff" : "#5b8cff";
+  ctx.beginPath();
+  ctx.moveTo(8, 0);
+  ctx.lineTo(-5, -7);
+  ctx.lineTo(-5, 7);
+  ctx.fill();
+}
+
+function hud() {
+  if (state === "intro") return;
+  const s = fmt(score), m = "×" + floor(mult), n = nitroMult ? "× " + nitroMult : "";
+  if (s + m + n === shown) return;
+  shown = s + m + n;
+  $("score").textContent = s;
+  $("combo").textContent = m;
+  $("nitro").textContent = n;
+}
+
+// ---- sound, all synthesized ----
+let soundOn = load(SOUND_KEY) !== "off";
+let ac = null, master, engA, engB, engF, engGain, skidF, skidGain, crunch, lastZing = -1, lastRise = -1, lastSet = -1;
+
+function noiseBuffer(sec, grainy) {
+  const n = floor(ac.sampleRate * sec), buf = ac.createBuffer(1, n, ac.sampleRate), d = buf.getChannelData(0);
+  let g = 1;
+  for (let i = 0; i < n; i++) {
+    if (grainy && i % 96 === 0) g = random() < 0.35 ? 1 : 0.25; // crackle for the crash
+    d[i] = (random() * 2 - 1) * (grainy ? g * (1 - i / n) ** 2 : 1);
+  }
+  return buf;
+}
+
+function buildAudio() {
+  const gain = (v, to) => { const g = ac.createGain(); g.gain.value = v; g.connect(to); return g; };
+  const filter = (type, q, to) => { const f = ac.createBiquadFilter(); f.type = type; f.Q.value = q; f.connect(to); return f; };
+  const osc = (type, to) => { const o = ac.createOscillator(); o.type = type; o.connect(to); o.start(); return o; };
+  master = gain(soundOn ? 0.25 : 0, ac.destination);
+  // Engine: a sawtooth and a square sub-octave through a lowpass
+  engGain = gain(0, master);
+  engF = filter("lowpass", 1.2, engGain);
+  engA = osc("sawtooth", engF);
+  engB = osc("square", gain(0.35, engF));
+  // Skid: looped noise through a bandpass
+  skidGain = gain(0, master);
+  skidF = filter("bandpass", 1.1, skidGain);
+  const hiss = ac.createBufferSource();
+  hiss.buffer = noiseBuffer(2, false);
+  hiss.loop = true;
+  hiss.connect(skidF);
+  hiss.start();
+  crunch = noiseBuffer(0.6, true);
+}
+
+// From user gestures in a run: create the context once, resume it later
+function audioWake() {
+  if (!soundOn || state !== "play" || document.hidden) return;
+  if (!ac) {
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if (!AC) return;
+    try { if (navigator.audioSession) navigator.audioSession.type = "ambient"; } catch (e) {}
+    try { ac = new AC(); buildAudio(); } catch (e) { ac = null; return; }
+  }
+  if (ac.state !== "running") quiet(ac.resume());
+}
+
+function audioSleep() {
+  if (ac && ac.state === "running") quiet(ac.suspend());
+}
+
+const audible = () => ac && soundOn && ac.state === "running";
+
+// Engine follows speed, hiss follows drift angle; 20 updates a second
+function sfxFrame(speed, slip) {
+  if (!audible() || ac.currentTime - lastSet < 0.05) return;
+  const now = (lastSet = ac.currentTime), run = state === "play", s = min(1.6, speed / MAXSPD);
+  const k = run ? clamp((slip - 0.12) / 0.45, 0, 1) : 0;
+  engA.frequency.setTargetAtTime(48 + 70 * s, now, 0.06);
+  engB.frequency.setTargetAtTime(24 + 35 * s, now, 0.06);
+  engF.frequency.setTargetAtTime(220 + 900 * min(1, s), now, 0.08);
+  engGain.gain.setTargetAtTime(run ? 0.16 + 0.24 * min(1, s) : 0, now, 0.06);
+  skidGain.gain.setTargetAtTime(k * 0.55, now, 0.05);
+  skidF.frequency.setTargetAtTime(1300 + 1300 * k, now, 0.05);
+}
+
+function tone(type, f0, f1, sweep, dur, vol, at = ac.currentTime) {
+  const o = ac.createOscillator(), g = ac.createGain();
+  o.type = type;
+  o.frequency.setValueAtTime(f0, at);
+  o.frequency.exponentialRampToValueAtTime(f1, at + sweep);
+  g.gain.setValueAtTime(0.0001, at);
+  g.gain.exponentialRampToValueAtTime(vol, at + 0.006);
+  g.gain.exponentialRampToValueAtTime(0.0001, at + dur);
+  o.connect(g).connect(master);
+  o.start(at);
+  o.stop(at + dur + 0.05);
+}
+
+function noiseHit(rate, type, freq, vol) {
+  const src = ac.createBufferSource(), f = ac.createBiquadFilter(), g = ac.createGain(), at = ac.currentTime;
+  src.buffer = crunch;
+  src.playbackRate.value = rate;
+  f.type = type;
+  f.frequency.setValueAtTime(freq, at);
+  if (type === "lowpass") f.frequency.exponentialRampToValueAtTime(300, at + 0.45);
+  g.gain.value = vol;
+  src.connect(f).connect(g).connect(master);
+  src.start(at);
+}
+
+// Nitro: a bright zing that climbs with the chain
+function sfxZing(n) {
+  if (!audible()) return;
+  const f = 660 * 2 ** (min(n / 2 - 1, 7) / 6);
+  tone("triangle", f, f * 1.5, 0.08, 0.3, 0.3);
+  tone("sine", f * 2, f * 3, 0.08, 0.22, 0.12, ac.currentTime + 0.03);
+  lastZing = ac.currentTime;
+}
+
+// Combo step: a small rising blip up a pentatonic scale
+function sfxRise(lv) {
+  if (!audible() || ac.currentTime - lastZing < 0.15 || ac.currentTime - lastRise < 0.1) return;
+  const i = min(lv - 2, 11), f = 523.25 * 2 ** ((12 * floor(i / 5) + [0, 2, 4, 7, 9][i % 5]) / 12);
+  tone("sine", f, f * 1.12, 0.06, 0.16, 0.2);
+  lastRise = ac.currentTime;
+}
+
+// Crash: crunch and a low thump; pop: smaller, for a wrecked cop
+function sfxCrash() {
+  if (audible()) { noiseHit(1, "lowpass", 3500, 0.9); tone("sine", 150, 40, 0.25, 0.4, 0.8); }
+}
+function sfxPop() {
+  if (audible()) { noiseHit(1.6, "bandpass", 1500, 0.5); tone("sine", 220, 70, 0.12, 0.18, 0.3); }
+}
+
+function showSound() {
+  $("mute").setAttribute("aria-pressed", String(soundOn));
+  $("mute").setAttribute("aria-label", soundOn ? "Sound on" : "Sound off");
+  if (!ac) return;
+  master.gain.setTargetAtTime(soundOn ? 0.25 : 0, ac.currentTime, 0.02);
+  if (!soundOn) setTimeout(() => { if (!soundOn) audioSleep(); }, 120);
+  else if (state === "play" && !document.hidden) quiet(ac.resume());
+}
+
+// Mute is shared with the site and synced across tabs
+function toggleSound() {
+  soundOn = !soundOn;
+  store(SOUND_KEY, soundOn ? "on" : "off");
+  audioWake();
+  showSound();
+}
+addEventListener("storage", (e) => {
+  if (e.key !== SOUND_KEY && e.key !== null) return;
+  soundOn = load(SOUND_KEY) !== "off";
+  showSound();
+});
+
+// ---- loop ----
+function frame(ts) {
+  raf = 0;
+  let dt = last ? (ts - last) / 1000 : 1 / 60;
+  last = ts;
+  if (dt > 0.05 || dt <= 0) dt = 1 / 60;
+  clock += dt;
+  if (state === "play") update(dt);
+  else if (state === "crash") {
+    update(dt * 0.3); // slow motion, then the end card
+    if ((crashT -= dt) <= 0) showEnd();
+  } else for (const o of nitros) o.age += dt;
+  shake = max(0, shake - dt * 20);
+  flash = max(0, flash - dt * 3);
+  draw();
+  hud();
+  if (state !== "over") raf = requestAnimationFrame(frame);
+}
+
+function startLoop() {
+  if (raf || document.hidden) return;
+  last = 0;
+  raf = requestAnimationFrame(frame);
+}
+
+function stopLoop() {
+  cancelAnimationFrame(raf);
+  raf = 0;
+}
+
+function resize() {
+  W = max(1, innerWidth);
+  H = max(1, innerHeight);
+  DPR = min(devicePixelRatio || 1, 2);
+  canvas.width = round(W * DPR);
+  canvas.height = round(H * DPR);
+  Z = clamp(min(W, H) / 390, 0.8, 1.6);
+  VW = W / Z;
+  VH = H / Z;
+  CARSY = H * 0.54;
+  bg = ctx.createRadialGradient(W / 2, CARSY, 0, W / 2, CARSY, hypot(W, H) * 0.7);
+  bg.addColorStop(0, "#22143a");
+  bg.addColorStop(0.55, "#170f24");
+  bg.addColorStop(1, "#0d0817");
+  if (car && !raf) draw();
+}
+
+// ---- input: the car heads toward the finger ----
+canvas.addEventListener("pointerdown", (e) => {
+  if (state === "crash" || state === "over" || (pointerId !== null && e.pointerId !== pointerId)) return;
+  pointerId = e.pointerId;
+  try { canvas.setPointerCapture(e.pointerId); } catch (err) {}
+  px = e.clientX;
+  py = e.clientY;
+  driving = true;
+  if (state === "intro") startRun();
+  else audioWake();
+});
+canvas.addEventListener("pointermove", (e) => {
+  if (e.pointerId === pointerId) { px = e.clientX; py = e.clientY; }
+});
+const release = (e) => {
+  if (e.pointerId !== pointerId) return;
+  pointerId = null;
+  driving = false;
+  audioWake(); // iOS unlocks audio on touchend
+};
+for (const type of ["pointerup", "pointercancel", "lostpointercapture"]) canvas.addEventListener(type, release);
+canvas.addEventListener("contextmenu", (e) => e.preventDefault());
+
+$("mute").addEventListener("click", toggleSound);
+$("again").addEventListener("click", driveAgain);
+$("cta").addEventListener("click", () => tell("cta"));
+
+// Pause while hidden
+document.addEventListener("visibilitychange", () => {
+  if (document.hidden) {
+    stopLoop();
+    driving = false;
+    pointerId = null;
+    audioSleep();
+  } else if (state !== "over") {
+    startLoop();
+    audioWake();
+  }
+});
+addEventListener("resize", resize);
+
+showSound();
+resize();
+reset();
+draw();
+startLoop();
+tell("ready");
+</script>
+</body>
+</html>

@@ -8,6 +8,10 @@ Plain HTML and CSS, no build step. GitHub Pages serves the repository root at ht
 | `index.html` | The page: sticker hero, one band per game, support and privacy links |
 | `styles.css` | All styles; colour tokens at the top, one set per game band |
 | `404.html` | Shown by GitHub Pages for any missing address (uses root-absolute paths) |
+| `assets/likes.js` | Like buttons, their per-game celebrations and sounds |
+| `assets/toys.js` | "Try it here" player that opens a game's mini game |
+| `toys/<game>/index.html` | One self-contained mini game per game (drift, cosmo, metropolis) |
+| `server/` | The likes service, deployed to Railway |
 | `assets/icons/` | App icons, 384 px WebP, from each game's repository |
 | `assets/shots/` | Screenshots, 540 × 1170 WebP (Pocket Metropolis: 356 × 636 renders) |
 | `assets/og.png` | 1200 × 630 share image for link previews |
@@ -47,6 +51,10 @@ no-ads.games, so local previews never count. `assets/analytics.js` adds these ev
 | `game-jump` | `game` | A game is picked in the hero list |
 | `game-viewed` | `game` | A game band reaches the middle of the screen (once per visit) |
 | `footer-link` | `game`, `link` (`support` or `privacy`) | A support or privacy link is opened |
+| `like` / `unlike` | `game` | A heart is tapped |
+| `toy-open` | `game` | "Try it here" is tapped |
+| `toy-start` / `toy-end` | `game`, `score` on end | A mini game run starts or ends |
+| `toy-cta` | `game` | The App Store link inside a mini game is tapped |
 
 To tag an element, give it `data-event="name"`; its other `data-*` attributes become the event data.
 
@@ -57,6 +65,28 @@ To tag an element, give it `data-event="name"`; its other `data-*` attributes be
   `https://no-ads.games/?utm_source=tiktok&utm_medium=social&utm_campaign=drift-launch`. Umami lists them under UTM.
 - **Installs from the site:** the badges carry `pt=<provider token>&ct=no-ads.games`, so App Store Connect →
   Analytics → Campaigns shows product page views and downloads for the `no-ads.games` campaign.
+
+## Likes
+
+Each game has a heart: one like per visitor per game, tap again to take it back, counts visible to everyone.
+The page keeps a random visitor ID in `localStorage` (`nag.visitor`) and talks to the likes service:
+
+- **Service:** https://likes-production-c4ae.up.railway.app, Railway project `no-ads-games`, service `likes`
+  (Node, no dependencies, SQLite on a volume at `/data`).
+- **API:** `GET /likes`, `PUT /likes/<game>`, `DELETE /likes/<game>`, with the visitor ID in `X-Visitor`.
+- **Privacy:** only an HMAC of the visitor ID is stored (`VISITOR_SECRET`); IPs stay in memory to cap new likes
+  at 40 per network per hour.
+- **Browsers allowed** (`ALLOWED_ORIGINS`): https://no-ads.games and http://localhost:4173 for local previews.
+- **Deploy a change:** `cd server && railway up --service likes`.
+
+If the service can't be reached, the hearts stay hidden and the rest of the page works as before.
+
+## Mini games
+
+"Try it here" opens `toys/<game>/` in a dialog (full screen on phones). Each toy is one self-contained HTML file
+that also works opened on its own, and reports to the page with `postMessage`:
+`{ source: "nag-toy", game, type }` where `type` is `ready`, `start`, `end` (with `score`), `cta` or `like`.
+Toys and like sounds share one switch, `localStorage["nag.sound"] = "off"`, toggled by the speaker button in a toy.
 
 ## Deploy (GitHub Pages)
 
