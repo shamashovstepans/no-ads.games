@@ -37,7 +37,12 @@ body {
 
 a { color: inherit; text-underline-offset: 0.2em; text-decoration-thickness: 1.5px; }
 
-:focus-visible { outline: 3px solid currentColor; outline-offset: 4px; border-radius: 8px; }
+/* Focus rings are for keyboards. Safari on iPhone also draws them after a tap when the script moves focus
+   (to an opened game's title, or back to its tile), so they show only once Tab or an arrow key has been
+   used (site.js puts .keyboard on <html>; a tap takes it off). */
+:focus-visible { outline: none; }
+.keyboard :focus-visible { outline: 3px solid currentColor; outline-offset: 4px; border-radius: 8px; }
+[tabindex="-1"]:focus-visible { outline: none; } /* a title focused for screen readers, not a control */
 
 [hidden] { display: none !important; }
 
@@ -266,7 +271,42 @@ body.game {
   color: var(--ink);
 }
 
-.game__top { padding-block: 18px 6px; }
+.game__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding-block: 18px 6px;
+}
+
+/* Back to the library, top left where a phone's back button sits */
+.game__back {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  min-height: 40px;
+  padding: 0 16px 0 8px;
+  border: 1.5px solid var(--line);
+  border-radius: 999px;
+  color: var(--ink);
+  font-size: 15px;
+  font-weight: 650;
+  text-decoration: none;
+  transition: transform 0.15s, border-color 0.15s;
+}
+.game__back-icon {
+  width: 22px;
+  height: 22px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+@media (hover: hover) {
+  .game__back:hover { border-color: currentColor; }
+}
+.game__back:active { transform: scale(0.95); }
 
 .game__home { display: inline-block; color: var(--brand); line-height: 0; border-radius: 6px; }
 .game__home svg { display: block; width: auto; height: 34px; overflow: visible; }
@@ -611,7 +651,7 @@ body.game {
   font-weight: 600;
 }
 .feedback__chips input:checked + span { background: var(--ink); border-color: var(--ink); color: #f7f8fb; }
-.feedback__chips input:focus-visible + span { outline: 3px solid var(--brand); outline-offset: 2px; }
+.keyboard .feedback__chips input:focus-visible + span { outline: 3px solid var(--brand); outline-offset: 2px; }
 .feedback__field { display: grid; margin-top: 18px; }
 .feedback__hint { color: var(--ink-2); font-weight: 400; }
 .feedback__field textarea,

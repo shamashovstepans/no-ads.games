@@ -12,6 +12,13 @@
   const reduce = matchMedia("(prefers-reduced-motion: reduce)");
   const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
 
+  // Focus rings only for keyboard users (site.css): on once Tab or an arrow key moves focus, off on a tap
+  // or click. The on-screen keyboard has neither key, so typing feedback on a phone doesn't turn them on.
+  addEventListener("keydown", (e) => {
+    if (e.key === "Tab" || e.key.startsWith("Arrow")) document.documentElement.classList.add("keyboard");
+  }, true);
+  addEventListener("pointerdown", () => document.documentElement.classList.remove("keyboard"), true);
+
   /* ---------- Gameplay loops ---------- */
 
   const play = (v) => {
@@ -287,7 +294,8 @@
   function openGame(id, push) {
     if (id === current) return;
     if (!current) homeScroll = window.scrollY;
-    if (push) history.pushState({ view: "game", id }, "", `/games/${id}/`);
+    // fromHome: the entry behind this one is the library, so All games can simply go back to it
+    if (push) history.pushState({ view: "game", id, fromHome: !current }, "", `/games/${id}/`);
     transition(() => showGame(id), () => view.querySelector(".game__title")?.focus({ preventScroll: true }));
   }
 
@@ -304,6 +312,14 @@
     if (!a || a.target || a.hasAttribute("download")) return;
     const url = new URL(a.href, location.href);
     if (url.origin !== location.origin) return;
+    // All games: back in history when the library is the page before (it comes back as it was),
+    // otherwise to the library as a new page
+    if (a.hasAttribute("data-back") && current) {
+      e.preventDefault();
+      if (history.state?.fromHome) history.back();
+      else openHome(true);
+      return;
+    }
     const id = gameFromPath(url.pathname);
     if (id) {
       e.preventDefault();
