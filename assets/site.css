@@ -17,7 +17,12 @@
 
 * { box-sizing: border-box; }
 
-html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  /* no grey box flashing over whatever is tapped on iPhone: taps answer with their own motion */
+  -webkit-tap-highlight-color: transparent;
+}
 
 body {
   margin: 0;
