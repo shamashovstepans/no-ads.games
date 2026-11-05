@@ -477,6 +477,19 @@ body.game {
 @media (hover: hover) {
   .feedback-open:hover { transform: translateY(-2px); }
 }
+/* On a phone the pill would cover the Like button on a game's first screen: just the icon there */
+@media (max-width: 560px) {
+  .feedback-open { justify-content: center; width: 48px; min-height: 48px; padding: 0; }
+  .feedback-open__icon { width: 20px; height: 20px; }
+  .feedback-open__label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+}
 
 /* The form keeps the site's own ink and paper, on game pages too */
 .feedback {
