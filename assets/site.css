@@ -444,11 +444,110 @@ body.game {
   flex-wrap: wrap;
   align-items: center;
   gap: 8px 20px;
-  padding-block: 24px 40px;
+  padding-block: 24px 88px; /* room for the Feedback button in the corner */
   color: var(--ink-2);
   font-size: 14px;
 }
 .foot p { margin: 0; }
+
+/* ---------- Feedback ---------- */
+
+/* The corner button: ink on the library; on a game page, that game's colours turned around */
+.feedback-open {
+  position: fixed;
+  right: max(16px, env(safe-area-inset-right));
+  bottom: max(16px, env(safe-area-inset-bottom));
+  z-index: 5;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 0 18px 0 14px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--ink);
+  color: var(--bg, var(--paper));
+  font: 650 15px / 1 var(--font);
+  box-shadow: 0 6px 18px rgb(21 25 37 / 0.2);
+  cursor: pointer;
+  transition: transform 0.15s;
+}
+.feedback-open__icon { width: 18px; height: 18px; fill: currentColor; }
+.feedback-open:active { transform: scale(0.95); }
+@media (hover: hover) {
+  .feedback-open:hover { transform: translateY(-2px); }
+}
+
+/* The form keeps the site's own ink and paper, on game pages too */
+.feedback {
+  --ink: #151925;
+  --ink-2: #596075;
+  --line: #c3c8d4;
+  --line-strong: #9ea5b4;
+  width: min(520px, 100% - 32px);
+  max-height: calc(100dvh - 32px);
+  padding: 0;
+  border: 0;
+  border-radius: 22px;
+  background: #f7f8fb;
+  color: var(--ink);
+  box-shadow: 0 24px 64px rgb(21 25 37 / 0.3);
+}
+.feedback::backdrop { background: rgb(21 25 37 / 0.45); }
+.feedback__form,
+.feedback__done { padding: clamp(20px, 5vw, 30px); }
+.feedback__title { margin: 0; font-size: 27px; line-height: 1.15; font-weight: 700; }
+.feedback__lead { margin: 6px 0 0; color: var(--ink-2); }
+.feedback__topics { min-width: 0; margin: 22px 0 0; padding: 0; border: 0; }
+.feedback__topics legend,
+.feedback__field > span:first-child { margin-bottom: 8px; padding: 0; font-size: 14px; font-weight: 700; }
+.feedback__chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.feedback__chips label { position: relative; }
+.feedback__chips input { position: absolute; inset: 0; margin: 0; opacity: 0; cursor: pointer; }
+.feedback__chips span {
+  display: inline-flex;
+  align-items: center;
+  min-height: 36px;
+  padding: 0 14px;
+  border: 1.5px solid var(--line-strong);
+  border-radius: 999px;
+  font-size: 15px;
+  font-weight: 600;
+}
+.feedback__chips input:checked + span { background: var(--ink); border-color: var(--ink); color: #f7f8fb; }
+.feedback__chips input:focus-visible + span { outline: 3px solid var(--brand); outline-offset: 2px; }
+.feedback__field { display: grid; margin-top: 18px; }
+.feedback__hint { color: var(--ink-2); font-weight: 400; }
+.feedback__field textarea,
+.feedback__field input {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1.5px solid var(--line-strong);
+  border-radius: 14px;
+  background: #fff;
+  color: inherit;
+  font: 400 16px / 1.4 var(--font); /* 16px keeps iOS from zooming in */
+}
+.feedback__field textarea { min-height: 120px; resize: vertical; }
+.feedback__field textarea:focus,
+.feedback__field input:focus { outline: none; border-color: var(--ink); }
+.feedback__count { margin-top: 6px; color: var(--ink-2); font-size: 13px; }
+.feedback__count:empty { display: none; }
+.feedback__trap { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+.feedback__error { margin: 14px 0 0; color: #c0261f; font-weight: 600; }
+.feedback__actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 22px; }
+.feedback__actions button {
+  min-height: 44px;
+  padding: 0 20px;
+  border: 1.5px solid var(--line-strong);
+  border-radius: 999px;
+  background: none;
+  color: inherit;
+  font: 650 15px / 1 var(--font);
+  cursor: pointer;
+}
+.feedback__actions .feedback__send { background: var(--ink); border-color: var(--ink); color: #f7f8fb; }
+.feedback__actions .feedback__send:disabled { opacity: 0.6; cursor: progress; }
 
 /* Shown for a few seconds after opening a page with ?notrack or ?track (build.mjs, analytics) */
 .track-note {
